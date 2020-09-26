@@ -2,7 +2,7 @@
 
 
 def findTerrainCost(mType, x, y, unitTeam, player, clientObjs):
-  movecosts = clientObjs.moveCosts
+  #movecosts = clientObjs.moveCosts
 
 
 
