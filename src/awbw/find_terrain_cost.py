@@ -1,13 +1,35 @@
-# findTerrainCost
+# Used in getMovementTiles
 
+def findTerrainCost(maxX, maxY, mType, x, y, unitTeam, player, clientObjs):
+  moveCosts = clientObjs.movecosts
+  unitMap = clientObjs.unit_map
 
-def findTerrainCost(mType, x, y, unitTeam, player, clientObjs):
-  #movecosts = clientObjs.moveCosts
+  coName = player["co_name"]
+  power = player["players_co_power_on"]
+  weatherCode = clientObjs.game.games_weather_code
 
+  if x > (maxX-1) or x < 0 or y < 0 or y > (maxY-1):
+    return 10000 # supposed to be "null"
 
+  print(unitMap[3])
+  if x in unitMap and y in unitMap[x] and (unitMap[x][y]["team"] != unitTeam):
+    return "A"
+  
+  # Special cases for Olaf and Drake
+  if coName == "Olaf" and weatherCode == "S": weatherCode = "C"
+  if coName == "Drake" and weatherCode == "R": weatherCode = "C"
 
+  # "moveCosts is global" -- not applicable here?
+  mCost = moveCosts[x][y][weatherCode][mType]
+
+  # special cases for Sturm/Lash
   print ("findTerrainCost activated")
-  return
+
+  if mCost and weatherCode != "S":
+    if coName == "Sturm" or (coName == "Lash" and power != "N"):
+      mCost = 1
+  
+  return mCost
 '''
 //Used in getMovementTiles
 function findTerrainCost(mType, x, y, unitTeam, player, clientObjs) {
