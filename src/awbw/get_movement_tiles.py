@@ -11,10 +11,12 @@
   (playerInfo object is used to find the terrain cost of given tile in findTerrainCost)
 '''
 import json
+from queue import PriorityQueue
 import queue
 import heapq
 from math import inf
 from ..utils import AttributeDict
+from .find_terrain_cost import findTerrainCost
 
 def getMovementTiles(maxX, maxY, mType, mp, startTile, unitTeam, playerInfo, clientObjs):
   
@@ -41,27 +43,27 @@ def getMovementTiles(maxX, maxY, mType, mp, startTile, unitTeam, playerInfo, cli
   startNode = startTile["y"] * maxX + startTile["x"]
   dist[startNode] = 0
 
-
-  #queueTiles = queue.PriorityQueue()
-  # no initializing statement for heapq
-
   verif = {}
   initial = {"index":startNode, "dist": 0, "x": startTile["x"], "y": startTile["y"] }
-  #queueTiles.put(initial)
-  heap = heapq.heapify([initial])
-
-
+  #heap = []
+  #heapq.heappush(heap, initial)
+  #print (heap)
+  q = PriorityQueue()
+  q.put((initial["index"], initial["dist"], initial))
   tilesToDraw = [initial]
   verif[startNode] = 0
+  #print(q.get())
 
-  #while queueTiles.qsize != 0 :
-  while heap:
-    #current = queueTiles.get()
-    current = heap.heappop(heap)
-    index = current["index"]
-    minValue = current["dist"]
-    x = current["x"]
-    y = current["y"]
+  while not q.empty():
+    #print ("Got inside while loop")
+    #current = heapq.heappop(heap)
+    #print (q)
+    current = q.get()
+    #print (current)
+    index = current[2]["index"]
+    minValue = current[2]["dist"]
+    x = current[2]["x"]
+    y = current[2]["y"]
 
     visited[index] = True
     verif.clear() #hopefully this has the same effect as "delete verif"
@@ -73,16 +75,16 @@ def getMovementTiles(maxX, maxY, mType, mp, startTile, unitTeam, playerInfo, cli
       ax = x + xv[i]
       ay = y + yv[i]
 
-      #terrainCost = findTerrainCost(mType, ax, ay, unitTeam, playerInfo, clientObjs)
-      terrainCost = 1
+      terrainCost = findTerrainCost(maxX, maxY, mType, ax, ay, unitTeam, playerInfo, clientObjs)
+      #terrainCost = 1
 
       #Tile is outside of the map, or unit can't move to given tile
       if ax < 0 or ay < 0 or ax >= maxX or ay >= maxY or not terrainCost:
         continue
 
-      nextNodeIndex = ay * maxX + axg
+      nextNodeIndex = ay * maxX + ax
       mCost[nextNodeIndex] = terrainCost
-
+      #print ("GOT INSIDE FOR LOOP")
       if(visited[nextNodeIndex]):
         continue
 
@@ -97,21 +99,24 @@ def getMovementTiles(maxX, maxY, mType, mp, startTile, unitTeam, playerInfo, cli
       if newDist < dist[nextNodeIndex] and newDist < mp:
         previous[nextNodeIndex] = index
         dist[nextNodeIndex] = newDist
-        print("got movement tile to run")
+        #print("inner if loop")
 
         if nextNodeIndex not in verif:
           #queueTiles.put({"index": nextNodeIndex, "dist": newDist, "x":ax, "y":ay})
-          heap.heappush(heap, ({"index": nextNodeIndex, "dist": newDist, "x":ax, "y":ay}))
+          #heapq.heappush(heap, {"index": nextNodeIndex, "dist": newDist, "x":ax, "y":ay})
+          q.put((nextNodeIndex, newDist, {"index": nextNodeIndex, "dist": newDist, "x":ax, "y":ay}))
           verif[nextNodeIndex] = newDist
           tilesToDraw.append({"index": nextNodeIndex, "x":ax, "y":ay})
-        #else:
-        #  for node in queueTiles:
-        #    if node["index"] == nextNodeIndex:
-        #      node["dist"] = newDist
+        else:
+          for node in q:
+            print ("jank thing ran")
+            if node[2]["index"] == nextNodeIndex:
+              node[1] = newDist
+              node[2]["dist"] = newDist
 
-  print("got movement tile to run")
+  #print("got movement tile to run")
   movementInfo = {"dist": dist, "previous": previous, "mCost": mCost, "mp":mp}
-  print(movementInfo)
+  #print(movementInfo)
   return movementInfo
 '''/* 
   maxX, maxY: number of tiles for each row/column (Starts at 0, so have to add 1),

@@ -26,8 +26,10 @@ def loopNeighbors(x, y, movingUnit, clientObjs):
 
 	startX = unitX if unitX else x
 	startY = unitY if unitY else y
-	viewerTeam = playersInfo[viewerPId] and playersInfo[viewerPId]["players_team"]
+	if playersInfo[viewerPId]: viewerTeam = playersInfo[viewerPId]["players_team"]
+	else: viewerTeam = playersInfo[viewerPId]
 
+	# assigns ally/enemy/team buggily when you're viewing the opponent's options
 	for i in range(4):
 		ax = x + xv[i]
 		ay = y + yv[i]
@@ -39,8 +41,8 @@ def loopNeighbors(x, y, movingUnit, clientObjs):
 			unit = None
 		if unit:
 			unitTeam = playersInfo[unit["units_players_id"]]["players_team"]
-
 			if unitId and unit["units_players_id"] == viewerPId:
+
 				# Don't add moving unit to own units
 				if ax == startX and ay == startY: 
 					pass
@@ -50,9 +52,6 @@ def loopNeighbors(x, y, movingUnit, clientObjs):
 			if unitTeam != viewerTeam:
 				neighbors["enemy"].append(unit)
 
-
-
-	print ("looped neighbors")
 	return neighbors
 
 '''

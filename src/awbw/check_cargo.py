@@ -11,7 +11,6 @@ def checkCargo(transportUnit, cargoUnit):
       return fullMsg
 
     elif (transportUnit["units_name"] == "Black Boat"):
-
       if not firstCargo or not secondCargo:
         return "Y"
       return fullMsg

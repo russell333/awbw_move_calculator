@@ -6,6 +6,9 @@ def findBuildOptions(x, y, clientObjs):
 	playersInfo = clientObjs.players 
 	viewerPId = clientObjs.viewerPId
 
+	if x not in buildingsInfo or y not in buildingsInfo[x]:
+		buildOptions = []
+		return buildOptions
 	building = buildingsInfo[x][y]
 	buildingName = building["terrain_name"]
 	coName = playersInfo[viewerPId]["co_name"]
@@ -32,7 +35,7 @@ def findBuildOptions(x, y, clientObjs):
 	costMultiplier = 1
 	if coName == "Colin": costMultiplier = 0.8
 	if coName == "Hachi": costMultiplier = 0.9
-	if coName == "Hachi" and coPower == "C" or "S": costMultiplier = 0.5
+	if coName == "Hachi" and coPower == "C" or coPower == "S": costMultiplier = 0.5
 	if coName == "Kanbei": costMultiplier = 1.2
 
 	for unitName in genericUnits.keys:
@@ -47,7 +50,7 @@ def findBuildOptions(x, y, clientObjs):
 
 		if mType in mTypes and unitCost*costMultiplier <= playerFunds:
 			buildOptions.append(genericUnits[unitName]["units_name"])
-	print (buildOptions)
+	#print (buildOptions)
 	buildOptions.sort()
 	return buildOptions
 

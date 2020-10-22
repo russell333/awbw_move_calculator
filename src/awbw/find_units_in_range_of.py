@@ -61,6 +61,8 @@ def findUnitsInRangeOf(x, y, selectedUnit, clientObj, baseDamageValues):
                     if (attGenId in ATTACK1 and defGenId in ATTACK1[attGenId] and attAmmo == 0) \
                         and not (attGenId in ATTACK2 and defGenId in ATTACK2[attGenId]):
                             continue
+                    # Skip attacking units on the same team
+                    if unitMap[ax][ay]["team"] == selectedUnitTeam: continue
                     
                     # Exclude hidden units that can't be attacked
                     defName = unit.units_name 

@@ -1,5 +1,9 @@
 # Select the available options when clicking on a movement tile
-def checkTargetTile(selectedUnit, x, y, clientObjs):
+from .check_landing import checkLanding
+from .check_cargo import checkCargo
+from .loop_neighbors import loopNeighbors
+from .find_units_in_range_of import findUnitsInRangeOf
+def checkTargetTile(selectedUnit, x, y, clientObjs, base_damage_values):
 
   buildingsInfo = clientObjs.buildings
   playersInfo = clientObjs.players
@@ -9,20 +13,19 @@ def checkTargetTile(selectedUnit, x, y, clientObjs):
   optionsDisplay = []
   currentCargo = selectedUnit["units_cargo1_units_id"] or selectedUnit["units_cargo2_units_id"]
 
-  # Load option
   if x in unitMap and y in unitMap[x] and selectedUnit["units_id"] != unitMap[x][y]["units_id"]:
     targetUnitId = unitMap[x][y]["units_id"]
     targetUnit = unitsInfo[targetUnitId]
     targetName = targetUnit["units_name"]
 
-    #canLoad = checkCargo(targetUnit, selectedUnit)
-    canLoad = False
-    # possibly wrong:
-    targetCargo = targetUnit["units_cargo1_units_id"] or targetUnit["units_cargo2_units_id"]
+    # Load option
+    canLoad = checkCargo(targetUnit, selectedUnit)
+    if targetUnit["units_cargo1_units_id"]:
+      targetCargo = targetUnit["units_cargo1_units_id"]
+    else: targetCargo = targetUnit["units_cargo2_units_id"]
 
     if canLoad:
       loadOption = {"option": "Load", "clickable": True}
-      optionsDisplay.append(loadOption)
 
       # Transport is full
       if canLoad != "Y":
@@ -31,35 +34,35 @@ def checkTargetTile(selectedUnit, x, y, clientObjs):
 
       optionsDisplay.append(loadOption)
 
-
     # Join option
     if targetName == selectedUnit["units_name"] and targetUnit["units_hit_points"] < 10 \
     and not targetCargo and not currentCargo:
+      optionsDisplay.append({"option": "Join", "clickable": True})
       return optionsDisplay
 
-    if optionsDisplay.length() != 0: return optionsDisplay
+    if len(optionsDisplay) != 0: return optionsDisplay
 
-    return # empty return statement may be a problem
+    return  # empty return statement may be a problem
 
   # Unload option
 
-  #isLandingTile = checkLanding(currentCargo, selectedUnit, x, y, clientObjs)
-  isLandingTile = False
+  isLandingTile = checkLanding(currentCargo, selectedUnit, x, y, clientObjs)
   if isLandingTile and selectedUnit["units_x"] == x and selectedUnit["units_y"] == y:
     optionsDisplay.append({"option": "Unload", "clickable": True})
 
   # Repair option
   
-  '''neighbors = loopNeighbours(x, y, selectedUnit, clientObjs)
-  alliedNeighbors = neighbors.allied.length != 0
+  neighbors = loopNeighbors(x, y, selectedUnit, clientObjs)
+  #print (neighbors)
+  alliedNeighbors = len(neighbors["allied"]) != 0
 
   if selectedUnit["units_name"] == "Black Boat" and alliedNeighbors:
-    optionsDisplay.append({"option": "Repair", "clickable": True})}
+    optionsDisplay.append({"option": "Repair", "clickable": True})
   
   # Supply option
-  if selectedUnits.units_name == "APC" and alliedNeighbors:
-    optionsDisplay.append({"option": "Supply"}, "clickable" = True)
-  '''
+  if selectedUnit.units_name == "APC" and alliedNeighbors:
+    optionsDisplay.append({"option": "Supply", "clickable": True})
+  
   # Hide options
   if selectedUnit["units_name"] == "Stealth" or selectedUnit["units_name"] == "Sub":
     hideOption = {"option": "", "clickable": True}
@@ -94,11 +97,13 @@ def checkTargetTile(selectedUnit, x, y, clientObjs):
 
   # Fire Option
   # Don't calculate damage for indirects that have moved
-  if selectedUnit["units_short_range"] and selectedUnit["units_x"] != x or selected["units_y"] != y:
+  if selectedUnit["units_short_range"] and (selectedUnit["units_x"] != x or selectedUnit["units_y"] != y):
+    print ("SKIP")
     pass
   elif selectedUnit["units_ammo"]!= 0 or selectedUnit["units_second_weapon"]:
-    unitsInRange = findUnitsInRangeOf(x, y, selectedUnit, clientObjs)
-    if (unitsInRange.length != 0):
+    print ("INNER LOOP RUNS")
+    unitsInRange = findUnitsInRangeOf(x, y, selectedUnit, clientObjs, base_damage_values)
+    if (len(unitsInRange) != 0):
       unitAmmo = selectedUnit["units_ammo"]
       secondWeapon = selectedUnit["units_second_weapon"]
       fireOption = {"option": "Fire", "clickable": True}
@@ -112,13 +117,12 @@ def checkTargetTile(selectedUnit, x, y, clientObjs):
       #currentClick["unitsInRange"] = unitsInRange
 
   # Delete option
-  if x == selectableUnit["units_x"] and y == selectedUnit["units_y"]:
+  if x == selectedUnit["units_x"] and y == selectedUnit["units_y"]:
     optionsDisplay.append({"option": "Delete", "clickable": True})
 
   # Wait option
   optionsDisplay.append({"option": "Wait", "clickable": True})
 
-  print ("Check Target Tile Ran")
   return optionsDisplay
 
 

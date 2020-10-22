@@ -10,21 +10,20 @@ def findTerrainCost(maxX, maxY, mType, x, y, unitTeam, player, clientObjs):
 
   if x > (maxX-1) or x < 0 or y < 0 or y > (maxY-1):
     return 10000 # supposed to be "null"
-
-  print(unitMap[3])
-  if x in unitMap and y in unitMap[x] and (unitMap[x][y]["team"] != unitTeam):
+    
+  if x in unitMap and y in unitMap[x] and str(unitMap[x][y]["team"]) != str(unitTeam):
+    #print (unitMap[x][y]["team"])
     return "A"
+
   
   # Special cases for Olaf and Drake
   if coName == "Olaf" and weatherCode == "S": weatherCode = "C"
   if coName == "Drake" and weatherCode == "R": weatherCode = "C"
 
-  # "moveCosts is global" -- not applicable here?
+  # "moveCosts is global"
   mCost = moveCosts[x][y][weatherCode][mType]
 
   # special cases for Sturm/Lash
-  print ("findTerrainCost activated")
-
   if mCost and weatherCode != "S":
     if coName == "Sturm" or (coName == "Lash" and power != "N"):
       mCost = 1
