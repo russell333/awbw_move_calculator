@@ -51,7 +51,6 @@ def checkTargetTile(selectedUnit, x, y, clientObjs, base_damage_values):
     optionsDisplay.append({"option": "Unload", "clickable": True})
 
   # Repair option
-  
   neighbors = loopNeighbors(x, y, selectedUnit, clientObjs)
   #print (neighbors)
   alliedNeighbors = len(neighbors["allied"]) != 0
@@ -79,13 +78,16 @@ def checkTargetTile(selectedUnit, x, y, clientObjs, base_damage_values):
   if x in buildingsInfo and y in buildingsInfo[x]:
     targetTile = buildingsInfo[x][y]
   else: 
+    #targetTile = clientObjs["terrain"][x][y] #HUGE YOLO EDIT
     targetTile = "Terrain"
 
-  if selectedUnit["units_name"] == "Infantry" or selectedUnit["units_name"] == "Mech":
+  if (selectedUnit["units_name"] == "Infantry" or selectedUnit["units_name"] == "Mech") \
+  and targetTile != "Terrain":
     terrainName = targetTile["terrain_name"] # throws error here when targetTile = "Terrain"
 
     # following statement is suspect
-    if targetTile != "Terrain" and unitTeam != targetTile["buildings_team"] and terrainName != "Silo|Rubble":
+    if targetTile != "Terrain" and unitTeam != targetTile["buildings_team"] and terrainName != "Silo" \
+    and terrainName != "Missile Silo Empty":
       optionsDisplay.append({"option": "Capt", "clickable": True})
     elif terrainName == "Silo":
       optionsDisplay.append({"option": "Launch", "clickable": True})
@@ -93,15 +95,13 @@ def checkTargetTile(selectedUnit, x, y, clientObjs, base_damage_values):
 
   # Explode option
   if selectedUnit["units_name"] == "Black Bomb":
-    optionsDisplay.append({"options": "Explode", "clickable": True})
+    optionsDisplay.append({"option": "Explode", "clickable": True})
 
   # Fire Option
   # Don't calculate damage for indirects that have moved
   if selectedUnit["units_short_range"] and (selectedUnit["units_x"] != x or selectedUnit["units_y"] != y):
-    print ("SKIP")
     pass
   elif selectedUnit["units_ammo"]!= 0 or selectedUnit["units_second_weapon"]:
-    print ("INNER LOOP RUNS")
     unitsInRange = findUnitsInRangeOf(x, y, selectedUnit, clientObjs, base_damage_values)
     if (len(unitsInRange) != 0):
       unitAmmo = selectedUnit["units_ammo"]

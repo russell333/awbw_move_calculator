@@ -1,4 +1,4 @@
-
+# Check if unit is able to load in transport
 def checkCargo(transportUnit, cargoUnit):
   firstCargo = transportUnit["units_cargo1_units_id"]
   secondCargo = transportUnit["units_cargo2_units_id"]

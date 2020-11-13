@@ -52,6 +52,8 @@ def loopNeighbors(x, y, movingUnit, clientObjs):
 			if unitTeam != viewerTeam:
 				neighbors["enemy"].append(unit)
 
+	#print (neighbors)
+
 	return neighbors
 
 '''
